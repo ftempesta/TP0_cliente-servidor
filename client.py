@@ -1,5 +1,5 @@
 from socket import *
-
+from struct import pack, unpack
 import sys
 
 ip_address = sys.argv[1]
@@ -21,7 +21,7 @@ def encrypt(string, key_cesar):
         out += chr(ascii_msg)
     return out
 
-print(encrypt(string, key_cesar))
+#print(encrypt(string, key_cesar))
 
 """
 Conectar com servidor
@@ -36,28 +36,28 @@ Enviar mensagem
 # Após estabelecimento da conexão, 
 # o cliente irá enviar um inteiro de quatro bytes
 # em network byte order [send, htonl/pack] indicando o tamanho do string
+string_out = encrypt(string, key_cesar)
+conn.send(pack("!i", len(string_out)))
+conn.send(pack("!" + str(len(string_out)) + "s", string_out.encode("ascii")))
 
-for char in msg:
-    conn.send(char) # como converto para bit???
-    data = conn.recv(1024) # o que eu coloco aqui???
-    #print('Client recived: ', data)
 
-#TODO
 """
 Enviar key_cesar
 """
-conn.send(key_cesar)
-key = conn.recv(1024)
+conn.send(pack("!i", key_cesar))
 
-#TODO
+
 """
 Receber e imprimr resposta do servidor
 """
+data_byte = unpack("!" + str(len(string_out)) + "s", conn.recv(len(string_out)))[0]
+print(data_byte.decode("ascii"))
 
-#TODO
+
 """
 Fechar conexões
 """
+conn.close()
 
 
 

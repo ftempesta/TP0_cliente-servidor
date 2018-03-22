@@ -1,11 +1,22 @@
 from socket import *
-
+from struct import pack, unpack
 import sys
 import time
 
-port = sys.argv[1]
-#port = 5000
+port = int(sys.argv[1])
 ip_address = ''
+
+"""
+Decriptografar o texto
+"""
+def decrypt(string, key_cesar):
+    out = ""
+    for char in string:
+        ascii_msg = ord(char) - key_cesar
+        if (ord(char) < 97):
+            ascii_msg += 26   
+        out += chr(ascii_msg)
+    return out
 
 """
 Criar servidor TCP/IP
@@ -26,28 +37,21 @@ conn.listen(5)
 
 while True:
     connection, address = conn.accept()
-    size = connection.recv(1024) #recebe o tamanho da string??
+    size = int(unpack("!i", connection.recv(4))[0])
 
     while True:    
-        string = connection.recv(1024) #recebe a string
+        data_byte = unpack("!" + str(size) + "s",connection.recv(size))[0]
+        string = data_byte.decode("ascii")
+        
         if not string: break
-        key_cesar = connecton.recv(1024) #recebe a chave para decriptografar
+        key_cesar = int(unpack("!i", connection.recv(4))[0])
+        print(size, string, key_cesar)
+
         string_out = decrypt(string, key_cesar) #decriptografar
-        connection.send(b'Eco=>' + string_out)
+        print(string_out)
+        conn.send(pack("!" + str(size) + "s", string_out.encode("ascii")))
 
 connection.close()
 
-"""
-Decriptografar o texto
-"""
-def decrypt(string, key_cesar):
-    out = ""
-    for char in string:
-        ascii_msg = ord(char) - key_cesar
-        if (ord(char) >= 96):
-            ascii_msg += 26   
-        out += chr(ascii_msg)
-    return out
 
-print(encrypt(string, key_cesar))
 
