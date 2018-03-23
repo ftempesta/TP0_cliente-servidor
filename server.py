@@ -1,5 +1,5 @@
 from socket import *
-from struct import pack, unpack
+import struct  
 import sys
 import time
 
@@ -37,19 +37,19 @@ conn.listen(5)
 
 while True:
     connection, address = conn.accept()
-    size = int(unpack("!i", connection.recv(4))[0])
+    size = int(struct.unpack("!i", connection.recv(4))[0])
 
     while True:    
-        data_byte = unpack("!" + str(size) + "s",connection.recv(size))[0]
+        data_byte = struct.unpack("!" + str(size) + "s",connection.recv(size))[0]
         string = data_byte.decode("ascii")
         
         if not string: break
-        key_cesar = int(unpack("!i", connection.recv(4))[0])
+        key_cesar = int(struct.unpack("!i", connection.recv(4))[0])
         print(size, string, key_cesar)
 
         string_out = decrypt(string, key_cesar) #decriptografar
         print(string_out)
-        conn.send(pack("!" + str(size) + "s", string_out.encode("ascii")))
+        conn.send(struct.pack("!" + str(size) + "s", string_out.encode("ascii")))
 
 connection.close()
 

@@ -1,13 +1,14 @@
 from socket import *
-from struct import pack, unpack
+import struct  
 import sys
 
+"""
+Ler parâmetros
+"""
 ip_address = sys.argv[1]
 port = int(sys.argv[2])
 string = sys.argv[3]
 key_cesar = int(sys.argv[4])
-
-msg = [b'zzaa']
 
 """
 Encriptografar o texto
@@ -20,7 +21,6 @@ def encrypt(string, key_cesar):
             ascii_msg -= 26   
         out += chr(ascii_msg)
     return out
-
 #print(encrypt(string, key_cesar))
 
 """
@@ -32,25 +32,26 @@ conn.connect((ip_address, port))
 """
 Enviar mensagem
 """
-# TODO
-# Após estabelecimento da conexão, 
-# o cliente irá enviar um inteiro de quatro bytes
-# em network byte order [send, htonl/pack] indicando o tamanho do string
+# criptografar mensagem
 string_out = encrypt(string, key_cesar)
-conn.send(pack("!i", len(string_out)))
-conn.send(pack("!" + str(len(string_out)) + "s", string_out.encode("ascii")))
 
+# envio de um inteiro de quatro bytes indicando o tamanho do string
+conn.send(struct.pack("!i", len(string_out)))
+
+#envio da mensagm criptografada
+conn.send(struct.pack("!" + str(len(string_out)) + "s", string_out.encode("ascii")))
 
 """
 Enviar key_cesar
 """
-conn.send(pack("!i", key_cesar))
-
+conn.send(struct.pack("!i", key_cesar))
 
 """
 Receber e imprimr resposta do servidor
 """
-data_byte = unpack("!" + str(len(string_out)) + "s", conn.recv(len(string_out)))[0]
+string_back =conn.recv(len(string_out)) 
+#data_byte = struct.unpack("!i" + str(len(string_out)) + "s", conn.recv(len(string_out)))[0]
+data_byte = struct.unpack("!" + str(len(string_out)) + "s", string_back)[0]
 print(data_byte.decode("ascii"))
 
 
