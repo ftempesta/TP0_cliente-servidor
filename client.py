@@ -22,30 +22,23 @@ def encrypt(string, key_cesar):
             ascii_msg -= 26   
         out += chr(ascii_msg)
     return out
-#print(encrypt(string, key_cesar))
 
 """
-Conectar com servidor
+Conectar com servidor e Enviar mensagem
 """
 conn = socket(AF_INET, SOCK_STREAM)
 conn.connect((ip_address, port))
 
-"""
-Enviar mensagem
-"""
 # criptografar mensagem
 string_encrypt = encrypt(string, key_cesar)
 
 # envio de um inteiro de quatro bytes indicando o tamanho do string
 conn.send(struct.pack("!i", len(string_encrypt)))
-print(calcsize("i"))
 
-#envio da mensagm criptografada
+# envio da mensagm criptografada
 conn.send(struct.pack("!" + str(len(string_encrypt)) + "s", string_encrypt.encode("ascii")))
 
-"""
-Enviar key_cesar
-"""
+# envio da chave para decriptografar
 conn.send(struct.pack("!i", key_cesar))
 
 """
@@ -53,11 +46,9 @@ Receber e imprimr resposta do servidor
 """
 string_back = conn.recv(len(string_encrypt)) 
 
-#data_byte = struct.unpack("!i" + str(len(string_encrypt)) + "s", conn.recv(len(string_encrypt)))[0]
 data_byte = struct.unpack("!" + str(len(string_encrypt)) + "s", string_back)[0]
 
 print('Mensagem retornada: ', data_byte.decode("ascii"))
-
 
 """
 Fechar conexão
