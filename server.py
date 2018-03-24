@@ -1,7 +1,8 @@
 from socket import *
+from struct import *
 import struct  
 import sys
-import time
+import time, _thread as thread
 
 """
 Ler parâmetros
@@ -28,7 +29,6 @@ SOCK_STREAM = protocolo de transferência TCP
 """
 conn = socket(AF_INET, SOCK_STREAM)
 
-
 """
 Vínculo entre servidor e port
 """
@@ -45,10 +45,11 @@ while True:
     # tamanho da string 
     string_size = int(struct.unpack("!i", connection.recv(4))[0])
 
+
     while True:    
-        
+
         # recebe string do cliente
-        string_byte = struct.unpack("!" + str(string_size) + "s",connection.recv(string_size))[0]
+        string_byte = struct.unpack("!" + str(string_size) + "s", connection.recv(string_size))[0]
         
         # decodifica string
         string_received = string_byte.decode("ascii")
@@ -61,7 +62,11 @@ while True:
         string_decrypt = decrypt(string_received, key_cesar)
         
         # manda string decodificada
-        conn.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
+        connection.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
+
+"""
+Fechar conexão
+"""
 
 connection.close()
 
