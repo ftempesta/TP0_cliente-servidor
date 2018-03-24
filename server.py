@@ -3,6 +3,9 @@ import struct
 import sys
 import time
 
+"""
+Ler parâmetros
+"""
 port = int(sys.argv[1])
 ip_address = ''
 
@@ -13,8 +16,8 @@ def decrypt(string, key_cesar):
     out = ""
     for char in string:
         ascii_msg = ord(char) - key_cesar
-        if (ord(char) < 97):
-            ascii_msg += 26   
+        if (ascii_msg <= 96):
+            ascii_msg += 26  
         out += chr(ascii_msg)
     return out
 
@@ -24,6 +27,7 @@ AF_INET = protocolo de endereço ip
 SOCK_STREAM = protocolo de transferência TCP
 """
 conn = socket(AF_INET, SOCK_STREAM)
+
 
 """
 Vínculo entre servidor e port
@@ -37,19 +41,27 @@ conn.listen(5)
 
 while True:
     connection, address = conn.accept()
-    size = int(struct.unpack("!i", connection.recv(4))[0])
+    
+    # tamanho da string 
+    string_size = int(struct.unpack("!i", connection.recv(4))[0])
 
     while True:    
-        data_byte = struct.unpack("!" + str(size) + "s",connection.recv(size))[0]
-        string = data_byte.decode("ascii")
         
-        if not string: break
+        # recebe string do cliente
+        string_byte = struct.unpack("!" + str(string_size) + "s",connection.recv(string_size))[0]
+        
+        # decodifica string
+        string_received = string_byte.decode("ascii")
+        
+        if not string_received: break
+        # recebe a chave de decodificação
         key_cesar = int(struct.unpack("!i", connection.recv(4))[0])
-        print(size, string, key_cesar)
 
-        string_out = decrypt(string, key_cesar) #decriptografar
-        print(string_out)
-        conn.send(struct.pack("!" + str(size) + "s", string_out.encode("ascii")))
+        # decodifica string recebida
+        string_decrypt = decrypt(string_received, key_cesar)
+        
+        # manda string decodificada
+        conn.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
 
 connection.close()
 

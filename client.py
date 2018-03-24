@@ -33,13 +33,13 @@ conn.connect((ip_address, port))
 Enviar mensagem
 """
 # criptografar mensagem
-string_out = encrypt(string, key_cesar)
+string_encrypt = encrypt(string, key_cesar)
 
 # envio de um inteiro de quatro bytes indicando o tamanho do string
-conn.send(struct.pack("!i", len(string_out)))
+conn.send(struct.pack("!i", len(string_encrypt)))
 
 #envio da mensagm criptografada
-conn.send(struct.pack("!" + str(len(string_out)) + "s", string_out.encode("ascii")))
+conn.send(struct.pack("!" + str(len(string_encrypt)) + "s", string_encrypt.encode("ascii")))
 
 """
 Enviar key_cesar
@@ -49,16 +49,18 @@ conn.send(struct.pack("!i", key_cesar))
 """
 Receber e imprimr resposta do servidor
 """
-string_back =conn.recv(len(string_out)) 
-#data_byte = struct.unpack("!i" + str(len(string_out)) + "s", conn.recv(len(string_out)))[0]
-data_byte = struct.unpack("!" + str(len(string_out)) + "s", string_back)[0]
+string_back = conn.recv(len(string_encrypt)) 
+
+#data_byte = struct.unpack("!i" + str(len(string_encrypt)) + "s", conn.recv(len(string_encrypt)))[0]
+data_byte = struct.unpack("!" + str(len(string_encrypt)) + "s", string_back)[0]
+
 print(data_byte.decode("ascii"))
 
 
 """
 Fechar conexões
 """
-conn.close()
+connection.close()
 
 
 
