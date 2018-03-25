@@ -2,8 +2,7 @@ from socket import *
 from struct import *
 import struct  
 import sys
-import time
-import socketserver
+
 
 """
 Ler parâmetros
@@ -24,40 +23,47 @@ def decrypt(string, key_cesar):
     return out
 
 """
-Troca de dados com o cliente usando thread
-"""
-class client_streaming(socketserver.BaseRequestHandler):
-    def handle(self):
-        time.sleep(5)
-
-        while True:    
-           # tamanho da string 
-           string_size = int(struct.unpack("!i", self.request.recv(4))[0])
-
-           # recebe string do cliente
-           string_byte = struct.unpack("!" + str(string_size) + "s", self.request.recv(string_size))[0]
-
-           # decodifica string
-           string_received = string_byte.decode("ascii")
-
-           if not string_received: break
-           # recebe a chave de decodificação
-           key_cesar = int(struct.unpack("!i", self.request.recv(4))[0])
-
-           # decodifica string recebida
-           string_decrypt = decrypt(string_received, key_cesar)
-
-           # manda string decodificada
-           self.request.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
-
-        self.request.close()
-
-"""
 Criar servidor TCP/IP
+AF_INET = protocolo de endereço ip
+SOCK_STREAM = protocolo de transferência TCP
 """
-conn = socketserver.ThreadingTCPServer((ip_address, port), client_streaming)
-conn.serve_forever()
+conn = socket(AF_INET, SOCK_STREAM)
+conn.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+conn.setsockopt(SOL_SOCKET, SO_RCVTIMEO, struct.pack('ll', 15, 0))
 
+"""
+Vínculo entre servidor e port
+"""
+conn.bind((ip_address, port))
 
+"""
+Quantidade de clientes
+"""
+conn.listen(5)
 
-   
+while True:
+    connection, address = conn.accept()
+    
+    # tamanho da string 
+    string_size = int(struct.unpack("!i", connection.recv(4))[0])
+
+    # recebe string do cliente
+    string_byte = struct.unpack("!" + str(string_size) + "s", connection.recv(string_size))[0]
+    
+    # decodifica string
+    string_received = string_byte.decode("ascii")
+    
+    if not string_received: break
+    # recebe a chave de decodificação
+    key_cesar = int(struct.unpack("!i", connection.recv(4))[0])
+    # decodifica string recebida
+    string_decrypt = decrypt(string_received, key_cesar)
+    
+    # manda string decodificada
+    connection.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
+
+"""
+Fechar conexão
+"""
+
+connection.close()

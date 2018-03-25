@@ -28,15 +28,16 @@ Conectar com servidor e Enviar mensagem
 """
 conn = socket(AF_INET, SOCK_STREAM)
 conn.connect((ip_address, port))
+conn.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
 # criptografar mensagem
-string_encrypt = encrypt(string, key_cesar)
+string_encrypt = encrypt(string, key_cesar).encode("ascii")
 
 # envio de um inteiro de quatro bytes indicando o tamanho do string
 conn.send(struct.pack("!i", len(string_encrypt)))
 
 # envio da mensagm criptografada
-conn.send(struct.pack("!" + str(len(string_encrypt)) + "s", string_encrypt.encode("ascii")))
+conn.send(struct.pack("!" + str(len(string_encrypt)) + "s", string_encrypt))
 
 # envio da chave para decriptografar
 conn.send(struct.pack("!i", key_cesar))
@@ -48,7 +49,7 @@ string_back = conn.recv(len(string_encrypt))
 
 data_byte = struct.unpack("!" + str(len(string_encrypt)) + "s", string_back)[0]
 
-print('Mensagem retornada: ', data_byte.decode("ascii"))
+print(data_byte.decode("ascii"))
 
 """
 Fechar conexão
