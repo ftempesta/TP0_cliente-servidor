@@ -19,7 +19,7 @@ def encrypt(string, key_cesar):
     out = ""
     for char in string:
         ascii_msg = ord(char) + key_cesar
-        if (ord(char) >= 122):
+        while (ascii_msg > 122):
             ascii_msg -= 26   
         out += chr(ascii_msg)
     return out
