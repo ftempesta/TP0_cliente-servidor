@@ -25,31 +25,28 @@ def decrypt(string, key_cesar):
 
 def client_connection(connection):
 
-    while True:
         
-        # tamanho da string 
-        string_size = int(struct.unpack("!i", connection.recv(4))[0])
-
-        # recebe string do cliente
-        string_byte = struct.unpack("!" + str(string_size) + "s", connection.recv(string_size))[0]
-        
-        # decodifica string
-        string_received = string_byte.decode("ascii")
-        
-        if not string_received: break
-        # recebe a chave de decodificação
-        key_cesar = int(struct.unpack("!i", connection.recv(4))[0])
-        # decodifica string recebida
-        string_decrypt = decrypt(string_received, key_cesar)
-        
-        # manda string decodificada
-        connection.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
+    # tamanho da string 
+    string_size = int(struct.unpack("!i", connection.recv(4))[0])
+    # recebe string do cliente
+    string_byte = struct.unpack("!" + str(string_size) + "s", connection.recv(string_size))[0]
+    
+    # decodifica string
+    string_received = string_byte.decode("ascii")
+    
+    # recebe a chave de decodificação
+    key_cesar = int(struct.unpack("!i", connection.recv(4))[0])
+    # decodifica string recebida
+    string_decrypt = decrypt(string_received, key_cesar)
+    
+    # manda string decodificada
+    connection.send(struct.pack("!" + str(string_size) + "s", string_decrypt.encode("ascii")))
+    print(string_decrypt)
     connection.close()
 
 def server():
     conn = socket(AF_INET, SOCK_STREAM)
-    conn.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    conn.setsockopt(SOL_SOCKET, SO_RCVTIMEO, struct.pack('ll', 15, 0))
+    
     
     conn.bind((ip_address, port))
 
@@ -57,6 +54,8 @@ def server():
 
     while True:
         connection, address = conn.accept()
+        connection.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        connection.setsockopt(SOL_SOCKET, SO_RCVTIMEO, struct.pack('ll', 15, 0))
         thread.start_new_thread(client_connection, (connection,)) 
 server()
 
