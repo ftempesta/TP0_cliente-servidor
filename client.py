@@ -3,6 +3,7 @@ from struct import *
 import struct
 import sys
 
+
 """
 Ler parâmetros
 """
@@ -55,8 +56,3 @@ print(data_byte.decode("ascii"))
 Fechar conexão
 """
 conn.close()
-
-
-
-
-
